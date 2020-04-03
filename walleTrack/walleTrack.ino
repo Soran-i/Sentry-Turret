@@ -1,5 +1,9 @@
+#include <LiquidCrystal_I2C.h>
+
 #include <HCSR04.h>
 #include <Servo.h>
+#include <SoftwareSerial.h>
+#include <avr/wdt.h>
 
 // function prototypes 
 void mapping(UltraSonicDistanceSensor sensor, double mapp[]);
@@ -7,9 +11,12 @@ double readDist(UltraSonicDistanceSensor sensor);
 bool check(UltraSonicDistanceSensor sensor, double Map []);
 void playtune();
 
+
 // device pins
 UltraSonicDistanceSensor leftSensor(10,12); // (trigger, echo)
 UltraSonicDistanceSensor rightSensor(11,13);
+SoftwareSerial BTserial(2,3);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 int BUZZER = 5;
 int PIR = 4;
 
@@ -32,24 +39,36 @@ Servo servo;
 
 void setup() {
   // put your setup code here, to run once:
+  lcd.begin();
+  lcd.backlight();
   Serial.begin(9600);
+  BTserial.begin(9600);
   servo.attach(9);
+  MCUSR = 0;
   pinMode(PIR, INPUT);
+  BTserial.println("Mapping...");
+  delay(3000);
   mapping(leftSensor, mapLeft);
   mapping(rightSensor, mapRight);
   playtune();
 }
 
 void loop() {
+      Serial.println(readDist(leftSensor));
  
       // while PIR dosesnt detect anyone
       if(digitalRead(PIR) == LOW){
-           Serial.println("No one here");
-           Serial.println(digitalRead(PIR));
+           String input = BTserial.readString();
+           lcd.home();
+           lcd.println("Safe");
+           if (input.compareTo("reset") == 13) {
+             reset();
+           }
         }
       else{
-
-       Serial.println("Intruder here");
+        lcd.home();
+        lcd.println("INTRUDER");
+       BTserial.println("Intruder here");
        Serial.println(digitalRead(PIR));
 
       // pings both ultrasonic senosrs and checks differnce in enviroment
@@ -188,4 +207,11 @@ void mapping(UltraSonicDistanceSensor sensor, double mapp []) {
     servo.write(pos*10);              
     delay(moveDelay);                     
   } 
+}
+
+void reset() {
+  wdt_enable(WDTO_15MS);
+  for (;;) {
+    
+  }
 }
