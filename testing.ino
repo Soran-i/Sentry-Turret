@@ -36,6 +36,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   servo.attach(9);
+  mapping(rightSensor, mapRight, 1);
 
 }
 
@@ -43,7 +44,7 @@ void loop() {
   // put your main code here, to run repeatedly: 
   // do one at a time comment out rest
 
-  // test 1 with serial plotter
+  // test 1 with serial plotter compares single sensor sweep results with mapped reading on 
 for(int i = 0; i < 19; i++){
     double reading = readDist(rightSensor);
     Serial.print(mapRight[i]);
@@ -51,16 +52,23 @@ for(int i = 0; i < 19; i++){
     Serial.println(reading);
 }
 
+for (pos = 18; pos >= 0; pos -= 1) { 
+    servo.write(pos*10);              
+    delay(moveDelay);                     
+  } 
 
 /*
-  // test 2 serial monitor
+ 
+
+
+  
+  // test 2 serial monitor  prints map over and over showing the variance of results with the ultrasonics
   for(int i = 0; i < 10 ; i++){
     mapping(rightSensor, mapRight, 1);
     printMap( mapRight);
-  }
-/*
-/*  
-  // test 3 serial monitor
+  } 
+  // test 3 serial monitor prints map over and over showing how the varaince decreases when an average over 50 readings is placesd into map 
+  
   for(int i = 0; i < 10 ; i++){
     mapping(rightSensor, mapRight, 50);
     printMap( mapRight);
@@ -98,6 +106,12 @@ void mapping(UltraSonicDistanceSensor sensor, double mapp [], int av) {
     // averge over 50 readings 
     mapp[pos] = data/av;
   }
+
+   // back to reset position;
+  for (pos = 18; pos >= 0; pos -= 1) { 
+    servo.write(pos*10);              
+    delay(moveDelay);                     
+  } 
 }
 
 double readDist(UltraSonicDistanceSensor sensor) {
