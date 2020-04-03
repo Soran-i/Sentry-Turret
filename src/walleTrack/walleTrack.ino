@@ -1,5 +1,4 @@
 #include <LiquidCrystal_I2C.h>
-
 #include <HCSR04.h>
 #include <Servo.h>
 #include <SoftwareSerial.h>
@@ -17,6 +16,7 @@ UltraSonicDistanceSensor leftSensor(10,12); // (trigger, echo)
 UltraSonicDistanceSensor rightSensor(11,13);
 SoftwareSerial BTserial(2,3);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo servo;
 int BUZZER = 5;
 int PIR = 4;
 
@@ -35,7 +35,7 @@ int lastdirect = 1;
 int maxAng = 18;
 int minAng = 0;
 
-Servo servo;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -54,13 +54,12 @@ void setup() {
 }
 
 void loop() {
-      Serial.println(readDist(leftSensor));
- 
+
       // while PIR dosesnt detect anyone
       if(digitalRead(PIR) == LOW){
            String input = BTserial.readString();
            lcd.home();
-           lcd.println("Safe");
+           lcd.println("Safe!!!!");
            if (input.compareTo("reset") == 13) {
              reset();
            }
@@ -68,8 +67,7 @@ void loop() {
       else{
         lcd.home();
         lcd.println("INTRUDER");
-       BTserial.println("Intruder here");
-       Serial.println(digitalRead(PIR));
+       BTserial.println("INTRUDER");
 
       // pings both ultrasonic senosrs and checks differnce in enviroment
       boolean right = check(rightSensor, mapRight);
